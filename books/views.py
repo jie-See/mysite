@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from books.models import Book
 
 
 # Create your views here.
@@ -25,3 +26,29 @@ def current_url_view_bad(request):
 
 def current_url_view_good(request):
     return HttpResponse('Welcome to the page at %s' % request.get_host())
+
+
+def ua_display_bad(request):
+    ua = request.META['HTTP_USER_AGENT']
+    return HttpResponse("Your browser is %s" % ua)
+
+
+def search_form(request):
+    return render(request, 'search_form.html')
+
+
+def search(request):
+    if 'q' in request.GET:
+        message = 'You searched for:%r'%request.GET['q']
+        q = request.GET['q']
+        if not q:
+            error = True
+        elif len(q) > 20:
+            error = True
+        else:
+            books = Book.objects.filter(title__icontains=q)
+            return render(request,'search_results.html', {'books': books, 'query': q})
+    else:
+        # message = 'You submitted an empty form.'
+        # return HttpResponse(message)
+        return render(request, 'search_form.html', {'error': True})
